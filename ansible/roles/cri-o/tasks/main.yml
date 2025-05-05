@@ -1,0 +1,57 @@
+- name: cri-o
+  tasks:
+    - name: Add CRI-O repository
+      ansible.builtin.shell: |
+        OS="xUbuntu_22.04"
+        VERSION="1.29"
+        echo "deb [signed-by=/usr/share/keyrings/cri-o-archive-keyring.gpg] http://download.opensuse.org/repositories/devel:/kubic:/libcontainers:/stable/$OS/ /" | tee /etc/apt/sources.list.d/devel:kubic:libcontainers:stable.list
+        echo "deb [signed-by=/usr/share/keyrings/cri-o-archive-keyring.gpg] http://download.opensuse.org/repositories/devel:/kubic:/libcontainers:/stable:/cri-o:/$VERSION/$OS/ /" | tee /etc/apt/sources.list.d/devel:kubic:libcontainers:stable:cri-o:$VERSION.list
+      become: true
+
+    - name: Install CRI-O
+      ansible.builtin.apt:
+        name:
+          - cri-o
+          - cri-o-runc
+        update_cache: yes
+      become: true
+
+    - name: Enable and start CRI-O
+      ansible.builtin.systemd:
+        name: crio
+        enabled: yes
+        state: started
+      become: true
+
+- name: kubelet
+  tasks:
+    - name: Add Kubernetes apt key
+      ansible.builtin.shell: |
+        curl -fsSL https://packages.cloud.google.com/apt/doc/apt-key.gpg | apt-key add -
+      become: true
+
+    - name: Add Kubernetes repository
+      ansible.builtin.shell: |
+        echo "deb http://apt.kubernetes.io/ kubernetes-xenial main" | tee /etc/apt/sources.list.d/kubernetes.list
+      become: true
+
+    - name: Install kubelet
+      ansible.builtin.apt:
+        name: kubelet
+        update_cache: yes
+      become: true
+
+    - name: Enable and start kubelet
+      ansible.builtin.systemd:
+        name: kubelet
+        enabled: yes
+        state: started
+      become: true
+
+- name: kubeadm
+  tasks:
+    - name: Install kubeadm
+      ansible.builtin.apt:
+        name: kubeadm
+        update_cache: yes
+      become: true

@@ -1,0 +1,41 @@
+- name: Удаление старого репозитория Kubernetes (если есть)
+  file:
+    path: "/etc/apt/sources.list.d/kubernetes.list"
+    state: absent
+
+- name: Добавление нового репозитория Kubernetes
+  copy:
+    dest: "/etc/apt/sources.list.d/kubernetes.list"
+    content: |
+      deb [signed-by=/etc/apt/keyrings/kubernetes.asc] https://pkgs.k8s.io/core:/stable:/v1.29/deb/ /
+
+- name: Добавление GPG-ключа для Kubernetes
+  shell: |
+    curl -fsSLo /etc/apt/keyrings/kubernetes.asc https://pkgs.k8s.io/core:/stable:/v1.29/deb/Release.key
+  args:
+    creates: /etc/apt/keyrings/kubernetes.asc
+
+- name: Обновление apt-кеша
+  apt:
+    update_cache: yes
+
+- name: Установка kubelet
+  apt:
+    name: kubelet
+    state: present
+
+- name: Запрет автоматического обновления kubelet
+  dpkg_selections:
+    name: kubelet
+    selection: hold
+
+- name: Установка kubeadm
+  apt:
+    name: kubeadm
+    state: present
+
+- name: Запрет автоматического обновления kubeadm
+  dpkg_selections:
+    name: kubeadm
+    selection: hold
+

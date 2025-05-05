@@ -1,0 +1,6 @@
+- name: Запрет автоматического обновления kubelet
+  command: echo "kubelet hold" | dpkg --set-selections
+
+- name: Запрет автоматического обновления kubeadm
+  command: echo "kubeadm hold" | dpkg --set-selections
+
